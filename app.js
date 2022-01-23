@@ -1,16 +1,16 @@
 console.log("learning ajax with code with harry")
 
-let fetchBtn = document.getElementById("fetchbtn");
+let fetchBtn = document.getElementById("populatebtn");
 fetchBtn.addEventListener('click',buttonClickHandler)
 
 function buttonClickHandler(){
-    console.log("you have clicked fetchBtn");
+    console.log("you have clicked populatebtn");
 
     // instantiate an xhr object
     const xhr = new XMLHttpRequest();
 
     // open the object
-    xhr.open('GET','nameer1.txt',true);
+    xhr.open('GET','http://dummy.restapiexample.com/api/v1/employees',true);
 
     // what to do on progress
     xhr.onprogress = function (){
@@ -19,7 +19,8 @@ function buttonClickHandler(){
 
     xhr.onload = function(){
         if(this.status === 200){
-            console.log(this.responseText)
+            let obj = JSON.parse(this.responseText)
+            console.log(obj.data[20].employee_name)
         }
         else{
             console.log("some error occured")
