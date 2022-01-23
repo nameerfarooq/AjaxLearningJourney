@@ -10,7 +10,7 @@ let scienceDiv = document.getElementById("science");
 scienceDiv.addEventListener('click', populate)
 
 let btnCategory = document.getElementById("categoryBtn");
-btnCategory.addEventListener('click',backToCategory)
+btnCategory.addEventListener('click', backToCategory)
 btnCategory.style.display = "none";
 
 
@@ -24,7 +24,7 @@ newsMain.style.display = "none";
 
 // going back to categories 
 
-function backToCategory(){
+function backToCategory() {
     btnCategory.style.display = "none";
     categoryDiv.style.display = "flex";
     newsMain.style.display = "none";
@@ -35,54 +35,94 @@ function backToCategory(){
 
 
 function populate() {
-    console.log("you have clicked  card whos id is : ", this.id)
+    let internetStatus = navigator.onLine;
+    // console.log(internetStatus)
+    spinnerDiv.style.display = "block"
+
+    // console.log("you have clicked  card whos id is : ", this.id)
     let category = this.id
+    // if internet is connected requesting for data from {newsapi.org}
+    if (internetStatus) {
+        // instantiate an xhr object
+        const xhr = new XMLHttpRequest();
 
-    // instantiate an xhr object
-    const xhr = new XMLHttpRequest();
+        // open the object
+        xhr.open('GET', `https://newsapi.org/v2/everything?q=${category}&apiKey=1cbcde3215f446b2852cbe4cb3e05354`, true);
 
-    // open the object
-    xhr.open('GET', `https://newsapi.org/v2/everything?q=${category}&apiKey=1cbcde3215f446b2852cbe4cb3e05354`, true);
+        // what to do on progress
+        xhr.onprogress = function () {
+            // console.log("on progress")
+            spinnerDiv.style.display = "block"
+        }
 
-    // what to do on progress
-    xhr.onprogress = function () {
-        console.log("on progress")
-        spinnerDiv.style.display = "block"
-    }
+        xhr.onload = function () {
+            if (this.status === 200) {
+                spinnerDiv.style.display = "none"
+                newsMain.style.display = "flex";
 
-    xhr.onload = function () {
-        if (this.status === 200) {
-            spinnerDiv.style.display = "none"
-            newsMain.style.display = "flex";
+                let obj = JSON.parse(this.responseText)
+                // console.log(obj.articles)
 
-            let obj = JSON.parse(this.responseText)
-            console.log(obj.articles)
-            let newspage = document.getElementById("newsDiv");
-            console.log(newspage)
-            //  hiding category divs 
-            categoryDiv.style.display = "none";
-            // displaying results on website
-            let structure = "";
-            for (let step = 0; step < 10; step++) {
-                let news = obj.articles[step]
-                structure += `<div class="newscard">
+                // storing data in local storage
+
+                localStorage.setItem("savedNews", JSON.stringify(obj));
+
+
+                let newspage = document.getElementById("newsDiv");
+                //  hiding category divs 
+                categoryDiv.style.display = "none";
+                // displaying results on website
+                let structure = "";
+                for (let step = 0; step < 10; step++) {
+                    let news = obj.articles[step]
+                    structure += `<div class="newscard">
                 <img class="newsImage" src="${news.urlToImage}" alt="">
-                <h5 class="newsTitle">${news.title.slice(0,40)}...</h5>
+                <h5 class="newsTitle">${news.title.slice(0, 40)}...</h5>
                 <p class="newsDate">${news.publishedAt}</p>
-                <p class="newDescription">${news.description.slice(0,80)}...</p>
+                <p class="newDescription">${news.description.slice(0, 80)}...</p>
                 <a class="margin" href="${news.url}" target="_blank"><button type="button" class="btn btn-primary">Read more</button></a>
             </div>`
-                newsMain.innerHTML = structure;
+                    newsMain.innerHTML = structure;
+                }
+
+                btnCategory.style.display = "block";
+
+
             }
+            else {
+                console.log("some error occured");
 
-            btnCategory.style.display = "block";
-
-
+            }
         }
-        else {
-            console.log("some error occured")
-        }
-    }
+    
     // sending request
     xhr.send();
+    }
+
+
+    // if internet is not connected using local storage
+    else {
+        spinnerDiv.style.display = "none"
+        categoryDiv.style.display = "none";
+        newsMain.style.display = "flex";
+
+        let obj = JSON.parse(localStorage.getItem("savedNews"));
+        let structure = "";
+        for (let step = 0; step < 10; step++) {
+            let news = obj.articles[step]
+            structure += `<div class="newscard">
+                    <img class="newsImage" src="./images/noImageAvailable.png" alt="">
+                    <h5 class="newsTitle">${news.title.slice(0, 40)}...</h5>
+                    <p class="newsDate">${news.publishedAt}</p>
+                    <p class="newDescription">${news.description.slice(0, 80)}...</p>
+                    <a class="margin" href="${news.url}" target="_blank"><button type="button" class="btn btn-primary">Read more</button></a>
+                </div>`
+            newsMain.innerHTML = structure;
+        }
+        btnCategory.style.display = "block";
+
+    
+    }
 }
+
+
